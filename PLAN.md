@@ -63,13 +63,13 @@ OpenCode → MCP Server (localhost:3000) → XAI Responses API
 - [x] Add logging
 - [x] Test MCP protocol compliance
 
-### ⏳ Phase 3: Tool Integration (1-1.5 hours)
-- [ ] Create x_search tool wrapper
-- [ ] Wire XAI client to MCP handler
-- [ ] Format responses for MCP
-- [ ] Handle citations
-- [ ] Add streaming support
-- [ ] Error handling and timeouts
+### ✅ Phase 3: Tool Integration (1-1.5 hours)
+- [x] Create x_search tool wrapper
+- [x] Wire XAI client to MCP handler
+- [x] Format responses for MCP
+- [x] Handle citations
+- [x] Add streaming support
+- [x] Error handling and timeouts
 
 ### ⏳ Phase 4: Testing (30 min)
 - [ ] Unit tests for XAI client
