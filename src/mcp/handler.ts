@@ -8,11 +8,17 @@ import type {
   MCPToolCallResult,
 } from "./types";
 import { MCPErrorCode } from "./types";
+import { XSearchTool, type XSearchParams } from "../tools/x-search";
 
 export class MCPHandler {
   private protocolVersion = "2024-11-05";
   private serverName = "xai-mcp-server";
   private serverVersion = "0.1.0";
+  private xSearchTool: XSearchTool;
+
+  constructor(xSearchTool: XSearchTool) {
+    this.xSearchTool = xSearchTool;
+  }
 
   /**
    * Handle incoming JSON-RPC request
@@ -100,7 +106,6 @@ export class MCPHandler {
 
   /**
    * Handle tools/call request
-   * This will be implemented in Phase 3 with actual XAI integration
    */
   private async handleToolCall(
     params: any
@@ -111,16 +116,14 @@ export class MCPHandler {
       throw new Error(`Unknown tool: ${toolParams.name}`);
     }
 
-    // Placeholder - will be implemented in Phase 3
-    return {
-      content: [
-        {
-          type: "text",
-          text: "Tool implementation pending - Phase 3",
-        },
-      ],
-      isError: false,
-    };
+    // Validate arguments
+    if (!toolParams.arguments) {
+      throw new Error("Missing arguments for x_search tool");
+    }
+
+    // Execute x_search tool
+    const searchParams = toolParams.arguments as XSearchParams;
+    return await this.xSearchTool.execute(searchParams);
   }
 
   /**

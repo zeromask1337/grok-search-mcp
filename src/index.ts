@@ -1,6 +1,8 @@
 import { Hono } from "hono";
 import { logger } from "hono/logger";
 import { MCPHandler } from "./mcp/handler";
+import { XAIClient } from "./xai";
+import { XSearchTool } from "./tools/x-search";
 import { config, validateConfig } from "./config";
 import type { JSONRPCRequest } from "./mcp/types";
 
@@ -12,8 +14,15 @@ try {
   process.exit(1);
 }
 
+// Initialize XAI client and tools
+const xaiClient = new XAIClient({
+  apiKey: config.xai.apiKey,
+  model: config.xai.model,
+});
+const xSearchTool = new XSearchTool(xaiClient);
+
 const app = new Hono();
-const mcpHandler = new MCPHandler();
+const mcpHandler = new MCPHandler(xSearchTool);
 
 // Logging middleware
 app.use("*", logger());
