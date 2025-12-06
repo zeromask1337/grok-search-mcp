@@ -53,15 +53,15 @@ OpenCode → MCP Server (localhost:3000) → XAI Responses API
 - [x] Add error handling
 - [x] Test XAI client directly
 
-### ⏳ Phase 2: MCP Server (1-1.5 hours)
-- [ ] Setup Hono HTTP server
-- [ ] Implement MCP protocol handler
-  - [ ] `initialize` method
-  - [ ] `tools/list` method
-  - [ ] `tools/call` method
-- [ ] Add health check endpoint
-- [ ] Add logging
-- [ ] Test MCP protocol compliance
+### ✅ Phase 2: MCP Server (1-1.5 hours)
+- [x] Setup Hono HTTP server
+- [x] Implement MCP protocol handler
+  - [x] `initialize` method
+  - [x] `tools/list` method
+  - [x] `tools/call` method
+- [x] Add health check endpoint
+- [x] Add logging
+- [x] Test MCP protocol compliance
 
 ### ⏳ Phase 3: Tool Integration (1-1.5 hours)
 - [ ] Create x_search tool wrapper
