@@ -71,11 +71,11 @@ OpenCode → MCP Server (localhost:3000) → XAI Responses API
 - [x] Add streaming support
 - [x] Error handling and timeouts
 
-### ⏳ Phase 4: Testing (30 min)
-- [ ] Unit tests for XAI client
-- [ ] Integration tests for MCP protocol
-- [ ] Manual testing with OpenCode
-- [ ] Test error cases
+### ✅ Phase 4: Testing (30 min)
+- [x] Unit tests for XAI client
+- [x] Integration tests for MCP protocol
+- [x] Manual testing with OpenCode
+- [x] Test error cases
 
 ### ⏳ Phase 5: Documentation (15-30 min)
 - [ ] Update README with usage
