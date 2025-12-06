@@ -45,13 +45,13 @@ OpenCode → MCP Server (localhost:3000) → XAI Responses API
 - [x] Create .env.example
 - [x] Initial commit
 
-### ⏳ Phase 1: XAI Client (30-45 min)
-- [ ] Create XAI client with Responses API
-- [ ] Implement x_search request formatting
-- [ ] Add response parsing with citations
-- [ ] Implement SSE streaming support
-- [ ] Add error handling
-- [ ] Test XAI client directly
+### ✅ Phase 1: XAI Client (30-45 min)
+- [x] Create XAI client with Responses API
+- [x] Implement x_search request formatting
+- [x] Add response parsing with citations
+- [x] Implement SSE streaming support
+- [x] Add error handling
+- [x] Test XAI client directly
 
 ### ⏳ Phase 2: MCP Server (1-1.5 hours)
 - [ ] Setup Hono HTTP server
