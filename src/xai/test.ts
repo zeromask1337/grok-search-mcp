@@ -2,7 +2,7 @@ import { XAIClient } from "./client";
 
 /**
  * Simple test to verify XAI client works
- * Run with: XAI_API_KEY=your_key node --loader ts-node/esm src/xai/test.ts
+ * Run with: XAI_API_KEY=your_key bun run src/xai/test.ts
  */
 async function testXAIClient() {
   const apiKey = process.env.XAI_API_KEY;

@@ -4,8 +4,8 @@
   "description": "MCP server for XAI x_search tool",
   "type": "module",
   "scripts": {
-    "dev": "node --watch --loader ts-node/esm src/index.ts",
-    "start": "node --loader ts-node/esm src/index.ts",
+    "dev": "bun run --watch src/index.ts",
+    "start": "bun run src/index.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
@@ -14,9 +14,7 @@
   },
   "devDependencies": {
     "@types/bun": "latest",
-    "@types/node": "^24.10.1",
     "bun-types": "latest",
-    "ts-node": "^10.9.2",
     "typescript": "^5.9.3"
   }
 }
