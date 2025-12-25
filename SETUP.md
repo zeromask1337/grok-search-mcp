@@ -4,7 +4,7 @@ Complete guide to setting up the XAI MCP Server.
 
 ## Prerequisites
 
-- Node.js 18+ (or Bun 1.0+)
+- Bun 1.0+ (TypeScript runtime)
 - XAI API key from [console.x.ai](https://console.x.ai)
 
 ## Step 1: Get XAI API Key
@@ -19,7 +19,7 @@ Complete guide to setting up the XAI MCP Server.
 
 ```bash
 cd xai-mcp-server
-npm install
+bun install
 ```
 
 ## Step 3: Configure Environment
@@ -43,8 +43,18 @@ LOG_LEVEL=info
 
 ## Step 4: Start the Server
 
+Choose your mode:
+
+### Local Mode (Recommended)
+
+If using local mode (OpenCode spawns server on-demand), skip this step. OpenCode will start the server automatically.
+
+### Remote Mode
+
+If using remote mode (server runs 24/7):
+
 ```bash
-npm run dev
+bun run dev
 ```
 
 You should see:
@@ -59,6 +69,8 @@ You should see:
 ```
 
 ## Step 5: Verify Server
+
+### For Remote Mode
 
 ```bash
 curl http://localhost:3000/health
@@ -75,7 +87,46 @@ Expected response:
 }
 ```
 
-## Step 6: Configure OpenCode
+### For Local Mode
+
+Verification happens automatically when OpenCode spawns the server.
+
+## Step 6: Choose OpenCode Connection Mode
+
+### Option A: Local Mode (Recommended)
+
+OpenCode spawns the server as a subprocess on-demand. No need to run a separate server.
+
+Edit `~/.config/opencode/opencode.json`:
+
+```json
+{
+  "mcp": {
+    "xai": {
+      "type": "local",
+      "command": ["bun", "run", "/absolute/path/to/xai-mcp-server/src/index.ts", "--stdio"],
+      "environment": {
+        "XAI_API_KEY": "xai-your-actual-key-here"
+      },
+      "enabled": true
+    }
+  }
+}
+```
+
+**Important Notes:**
+- Use absolute path (e.g., `/Users/username/projects/xai-mcp-server`), not relative path
+- Find absolute path with: `cd /path/to/xai-mcp-server && pwd`
+- API key can be set here or in `.env` file (both work)
+
+**Benefits:**
+- No manual server startup required
+- Lower resource usage (only runs when OpenCode uses it)
+- Server stops when not needed
+
+### Option B: Remote Mode
+
+Server runs on localhost:3000. You start and manage the server manually.
 
 Choose one of two modes:
 
@@ -141,87 +192,18 @@ If you have an existing config, just add the `"xai"` section under `"mcp"`.
    ```
 3. OpenCode should automatically use the x_search tool
 
-## Running as a Service (Optional)
-
-### Using systemd (Linux)
-
-Create `/etc/systemd/system/xai-mcp.service`:
-
-```ini
-[Unit]
-Description=XAI MCP Server
-After=network.target
-
-[Service]
-Type=simple
-User=youruser
-WorkingDirectory=/path/to/xai-mcp-server
-ExecStart=/usr/bin/node --loader ts-node/esm src/index.ts
-Restart=always
-EnvironmentFile=/path/to/xai-mcp-server/.env
-
-[Install]
-WantedBy=multi-user.target
-```
-
-Enable and start:
-
-```bash
-sudo systemctl enable xai-mcp
-sudo systemctl start xai-mcp
-```
-
-### Using launchd (macOS)
-
-Create `~/Library/LaunchAgents/com.xai-mcp.plist`:
-
-```xml
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0">
-<dict>
-    <key>Label</key>
-    <string>com.xai-mcp</string>
-    <key>ProgramArguments</key>
-    <array>
-        <string>/usr/local/bin/node</string>
-        <string>--loader</string>
-        <string>ts-node/esm</string>
-        <string>/path/to/xai-mcp-server/src/index.ts</string>
-    </array>
-    <key>WorkingDirectory</key>
-    <string>/path/to/xai-mcp-server</string>
-    <key>RunAtLoad</key>
-    <true/>
-    <key>KeepAlive</key>
-    <true/>
-    <key>EnvironmentVariables</key>
-    <dict>
-        <key>XAI_API_KEY</key>
-        <string>your-api-key</string>
-    </dict>
-</dict>
-</plist>
-```
-
-Load the service:
-
-```bash
-launchctl load ~/Library/LaunchAgents/com.xai-mcp.plist
-```
-
 ## Updating
 
 ```bash
 cd xai-mcp-server
 git pull
-npm install
-# Restart the server
+bun install
+# Restart the server (if using remote mode)
 ```
 
 ## Uninstalling
 
-1. Stop the server (Ctrl+C or stop the service)
+1. Stop the server (if using remote mode)
 2. Remove the MCP config from `~/.config/opencode/opencode.json`
 3. Delete the project folder
 
