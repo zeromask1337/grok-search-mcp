@@ -3,16 +3,16 @@
   "version": "0.1.0",
   "description": "MCP server for XAI x_search tool",
   "type": "module",
-  "bin": {
-    "xai-mcp-server": "src/index.ts"
-  },
   "scripts": {
-    "dev": "bun run --watch src/index.ts",
-    "start": "bun run src/index.ts",
+    "dev": "bun run --watch src/cli.ts --transport http",
+    "start": "bun run src/cli.ts --transport http",
+    "start:stdio": "bun run src/cli.ts --transport stdio",
+    "start:http": "bun run src/cli.ts --transport http --port 3000",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.25.1",
+    "commander": "^14.0.2",
     "hono": "^4.6.15",
     "zod": "^3.24.1"
   },

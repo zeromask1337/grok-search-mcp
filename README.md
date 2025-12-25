@@ -23,7 +23,7 @@ Get your API key from [console.x.ai](https://console.x.ai)
 ### 2. Setup
 
 ```bash
-# Clone the repo (or copy files)
+# Clone repo (or copy files)
 cd xai-mcp-server
 
 # Copy environment template
@@ -33,22 +33,63 @@ cp .env.example .env
 # XAI_API_KEY=xai-your-key-here
 
 # Install dependencies
-npm install
-
-# Start the server
-npm run dev
+bun install
 ```
 
 ### 3. Configure OpenCode
 
-#### Option A: Remote Mode (HTTP) - Server runs separately
+## Transport Modes
 
-Start the server:
-```bash
-npm run dev
+### Local Mode (Recommended)
+
+Server runs on-demand via stdio transport. No background process needed.
+
+**Configure OpenCode (~/.config/opencode/opencode.json):**
+
+```json
+{
+  "mcp": {
+    "xai": {
+      "type": "local",
+      "command": ["bun", "run", "/absolute/path/to/xai-mcp-server/src/cli.ts", "--transport", "stdio"],
+      "environment": {
+        "XAI_API_KEY": "{env:XAI_API_KEY}"
+      },
+      "enabled": true
+    }
+  }
+}
 ```
 
-Add to `~/.config/opencode/opencode.json`:
+Replace `/absolute/path/to/xai-mcp-server` with the actual path to your cloned repository.
+
+**Or using environment variable:**
+
+```json
+{
+  "mcp": {
+    "xai": {
+      "type": "local",
+      "command": ["bun", "run", "/absolute/path/to/xai-mcp-server/src/cli.ts", "--transport", "stdio"],
+      "environment": {
+        "XAI_API_KEY": "your-xai-api-key-here"
+      },
+      "enabled": true
+    }
+  }
+}
+```
+
+### Remote Mode (Existing)
+
+Server runs continuously on HTTP endpoint.
+
+**Start the server:**
+```bash
+npm run start:http
+```
+
+**Configure OpenCode (~/.config/opencode/opencode.json):**
 
 ```json
 {
@@ -62,27 +103,6 @@ Add to `~/.config/opencode/opencode.json`:
   }
 }
 ```
-
-#### Option B: Local Mode (Stdio) - OpenCode spawns server
-
-Add to `~/.config/opencode/opencode.json`:
-
-```json
-{
-  "mcp": {
-    "xai": {
-      "type": "local",
-      "command": ["bun", "run", "/absolute/path/to/xai-mcp-server/src/index.ts", "--stdio"],
-      "environment": {
-        "XAI_API_KEY": "your-xai-api-key"
-      },
-      "enabled": true
-    }
-  }
-}
-```
-
-Replace `/absolute/path/to/xai-mcp-server` with the actual path to your cloned repository.
 
 ### 4. Use in OpenCode
 
@@ -205,10 +225,13 @@ Environment variables (`.env`):
 ```
 xai-mcp-server/
 ├── src/
-│   ├── index.ts          # Server entry point
+│   ├── cli.ts            # CLI entry point with transport selection
+│   ├── index.ts          # HTTP server entry (for backward compatibility)
+│   ├── http-server.ts    # HTTP transport implementation
+│   ├── stdio-server.ts   # Stdio transport implementation
 │   ├── config.ts         # Configuration
 │   ├── mcp/
-│   │   ├── handler.ts    # MCP protocol handler
+│   │   ├── handler.ts    # MCP protocol handler (HTTP)
 │   │   └── types.ts      # MCP type definitions
 │   ├── xai/
 │   │   ├── client.ts     # XAI API client
@@ -221,15 +244,24 @@ xai-mcp-server/
 └── README.md
 ```
 
-## Testing
+## Running the Server
 
+### Local (Stdio) Mode
 ```bash
-# Start the server
-npm run dev
-
-# In another terminal, run tests
-node --loader ts-node/esm test-integration.ts
+bun run start:stdio
 ```
+
+### Remote (HTTP) Mode
+```bash
+bun run start:http
+```
+
+### Development Mode (HTTP)
+```bash
+bun run dev
+```
+
+## Testing
 
 See [TESTING.md](./TESTING.md) for detailed testing instructions.
 

@@ -4,19 +4,21 @@
 
 1. **XAI API Key**: Get your API key from [console.x.ai](https://console.x.ai)
 2. **Environment Setup**: Copy `.env.example` to `.env` and add your API key
-3. **Dependencies**: Run `npm install`
+3. **Dependencies**: Run `bun install`
 
 ## Running Tests
 
-### 1. Start the Server
+### HTTP Mode Testing
+
+#### 1. Start the Server
 
 ```bash
-npm run dev
+bun run start:http
 ```
 
 The server should start on `http://localhost:3000`
 
-### 2. Run Integration Tests
+#### 2. Run Integration Tests
 
 In a separate terminal:
 
@@ -86,11 +88,67 @@ curl -X POST http://localhost:3000/mcp \
   }'
 ```
 
+### Stdio Mode Testing
+
+#### Using MCP Inspector
+
+In one terminal:
+```bash
+bun run start:stdio
+```
+
+In another terminal:
+```bash
+npx @modelcontextprotocol/inspector bun run src/cli.ts --transport stdio
+```
+
+This will open a web interface where you can:
+- List available tools
+- Call the x_search tool
+- View responses in real-time
+
+#### Manual Stdio Testing
+
+List tools:
+```bash
+echo '{"jsonrpc":"2.0","id":1,"method":"tools/list"}' | bun run start:stdio
+```
+
+Call a tool:
+```bash
+echo '{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"x_search","arguments":{"query":"test query"}}}' | bun run start:stdio
+```
+
 ## Testing with OpenCode
 
-### 1. Configure OpenCode
+### Local Mode (Stdio)
 
-Add to `~/.config/opencode/opencode.json`:
+Configure OpenCode:
+```json
+{
+  "mcp": {
+    "xai": {
+      "type": "local",
+      "command": ["bun", "run", "/absolute/path/to/xai-mcp-server/src/cli.ts", "--transport", "stdio"],
+      "environment": {
+        "XAI_API_KEY": "{env:XAI_API_KEY}"
+      },
+      "enabled": true
+    }
+  }
+}
+```
+
+Replace `/absolute/path/to/xai-mcp-server` with the actual path.
+
+Start OpenCode:
+```bash
+opencode
+```
+
+### Remote Mode (HTTP)
+
+#### 1. Configure OpenCode
 
 ```json
 {
@@ -105,13 +163,19 @@ Add to `~/.config/opencode/opencode.json`:
 }
 ```
 
-### 2. Start OpenCode
+#### 2. Start the Server
+
+```bash
+bun run start:http
+```
+
+#### 3. Start OpenCode
 
 ```bash
 opencode
 ```
 
-### 3. Test the Tool
+### Test the Tool
 
 In OpenCode, try:
 
