@@ -77,6 +77,12 @@ Expected response:
 
 ## Step 6: Configure OpenCode
 
+Choose one of two modes:
+
+### Remote Mode (HTTP) - Recommended for continuous use
+
+Server must be running separately (`npm run dev`). OpenCode connects via HTTP.
+
 Edit `~/.config/opencode/opencode.json`:
 
 ```json
@@ -91,6 +97,38 @@ Edit `~/.config/opencode/opencode.json`:
   }
 }
 ```
+
+### Local Mode (Stdio) - Recommended for on-demand use
+
+OpenCode spawns the server as a subprocess. No need to run it separately.
+
+Edit `~/.config/opencode/opencode.json`:
+
+```json
+{
+  "mcp": {
+    "xai": {
+      "type": "local",
+      "command": ["bun", "run", "/absolute/path/to/xai-mcp-server/src/index.ts", "--stdio"],
+      "environment": {
+        "XAI_API_KEY": "xai-your-actual-key-here"
+      },
+      "enabled": true
+    }
+  }
+}
+```
+
+Replace `/absolute/path/to/xai-mcp-server` with your actual repository path (use `pwd` to find it).
+
+**Mode comparison:**
+
+| Aspect | Remote (HTTP) | Local (Stdio) |
+|--------|---------------|---------------|
+| Server startup | Manual (`npm run dev`) | Automatic (spawned by OpenCode) |
+| Resource usage | Continuous 24/7 | Only when needed |
+| Connection | Over HTTP localhost | Direct stdio |
+| Best for | Continuous development | On-demand usage |
 
 If you have an existing config, just add the `"xai"` section under `"mcp"`.
 
