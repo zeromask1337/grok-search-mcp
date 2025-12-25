@@ -41,6 +41,13 @@ npm run dev
 
 ### 3. Configure OpenCode
 
+#### Option A: Remote Mode (HTTP) - Server runs separately
+
+Start the server:
+```bash
+npm run dev
+```
+
 Add to `~/.config/opencode/opencode.json`:
 
 ```json
@@ -55,6 +62,27 @@ Add to `~/.config/opencode/opencode.json`:
   }
 }
 ```
+
+#### Option B: Local Mode (Stdio) - OpenCode spawns server
+
+Add to `~/.config/opencode/opencode.json`:
+
+```json
+{
+  "mcp": {
+    "xai": {
+      "type": "local",
+      "command": ["bun", "run", "/absolute/path/to/xai-mcp-server/src/index.ts", "--stdio"],
+      "environment": {
+        "XAI_API_KEY": "your-xai-api-key"
+      },
+      "enabled": true
+    }
+  }
+}
+```
+
+Replace `/absolute/path/to/xai-mcp-server` with the actual path to your cloned repository.
 
 ### 4. Use in OpenCode
 
