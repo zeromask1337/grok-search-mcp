@@ -4,7 +4,7 @@ import {
   CallToolRequestSchema,
   ListToolsRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js";
-import { XSearchTool, type XSearchParams } from "../tools/x-search";
+import { XSearchTool, xSearchToolDefinition, type XSearchParams } from "../tools/x-search";
 
 /**
  * Create and start MCP server using stdio transport
@@ -27,35 +27,24 @@ export async function startStdioServer(xSearchTool: XSearchTool): Promise<void> 
   // Handle tools/list request
   server.setRequestHandler(ListToolsRequestSchema, async () => {
     return {
-      tools: [
-        {
-          name: "x_search",
-          description:
-            "Search X (Twitter) for posts, users, and threads using XAI's Grok search capabilities",
-          inputSchema: {
-            type: "object" as const,
-            properties: {
-              query: {
-                type: "string",
-                description: "The search query to find relevant X posts and content",
-              },
-            },
-            required: ["query"],
-          },
-        },
-      ],
+      tools: [xSearchToolDefinition],
     };
   });
 
   // Handle tools/call request
   server.setRequestHandler(CallToolRequestSchema, async (request) => {
-    if (request.params.name !== "x_search") {
+    if (request.params.name !== xSearchToolDefinition.name) {
       throw new Error(`Unknown tool: ${request.params.name}`);
     }
 
-    const toolParams = (request.params.arguments || {}) as unknown as XSearchParams;
-    const result = await xSearchTool.execute(toolParams);
+    const query = (request.params.arguments as XSearchParams | undefined)?.query;
+    if (!query || typeof query !== "string") {
+      throw new Error(
+        `Invalid arguments for ${xSearchToolDefinition.name}: query is required and must be a non-empty string`
+      );
+    }
 
+    const result = await xSearchTool.execute({ query });
     return result;
   });
 

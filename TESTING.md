@@ -4,14 +4,14 @@
 
 1. **XAI API Key**: Get your API key from [console.x.ai](https://console.x.ai)
 2. **Environment Setup**: Copy `.env.example` to `.env` and add your API key
-3. **Dependencies**: Run `npm install`
+3. **Dependencies**: Run `bun install`
 
 ## Running Tests
 
 ### 1. Start the Server
 
 ```bash
-npm run dev
+bun run dev
 ```
 
 The server should start on `http://localhost:3000`
@@ -21,7 +21,7 @@ The server should start on `http://localhost:3000`
 In a separate terminal:
 
 ```bash
-node --loader ts-node/esm test-integration.ts
+bun run test-integration.ts
 ```
 
 This will test:

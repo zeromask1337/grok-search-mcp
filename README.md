@@ -109,7 +109,7 @@ Add to `~/.config/opencode/opencode.json`:
 
 Start the server:
 ```bash
-npm run dev
+bun run dev
 ```
 
 Add to `~/.config/opencode/opencode.json`:

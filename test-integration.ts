@@ -7,8 +7,9 @@
  * 3. Run this test: node --loader ts-node/esm test-integration.ts
  */
 
-const MCP_URL = "http://localhost:3000/mcp";
-const HEALTH_URL = "http://localhost:3000/health";
+const PORT = process.env.PORT || "3000";
+const MCP_URL = `http://localhost:${PORT}/mcp`;
+const HEALTH_URL = `http://localhost:${PORT}/health`;
 
 interface TestResult {
   name: string;

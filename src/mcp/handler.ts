@@ -1,17 +1,26 @@
 import type {
   JSONRPCRequest,
   JSONRPCResponse,
-  MCPInitializeParams,
   MCPInitializeResult,
   MCPToolsListResult,
   MCPToolCallParams,
   MCPToolCallResult,
 } from "./types";
-import { MCPErrorCode } from "./types";
-import { XSearchTool, type XSearchParams } from "../tools/x-search";
+import {
+  MCPErrorCode,
+  MCP_PROTOCOL_VERSION,
+  validateInitializeParams,
+  validateJSONRPCRequest,
+  validateToolCallParams,
+} from "./types";
+import { XSearchTool, xSearchToolDefinition } from "../tools/x-search";
+import { z } from "zod";
+
+export const XSearchArgumentsSchema = z.object({
+  query: z.string().min(1, "Query must be a non-empty string"),
+});
 
 export class MCPHandler {
-  private protocolVersion = "2024-11-05";
   private serverName = "xai-mcp-server";
   private serverVersion = "0.1.0";
   private xSearchTool: XSearchTool;
@@ -21,24 +30,48 @@ export class MCPHandler {
   }
 
   /**
-   * Handle incoming JSON-RPC request
+   * Handle incoming JSON-RPC request.
+   * Returns null for notifications (no response should be sent).
    */
-  async handle(request: JSONRPCRequest): Promise<JSONRPCResponse> {
+  async handle(request: unknown): Promise<JSONRPCResponse | null> {
+    const validation = validateJSONRPCRequest(request);
+    if (!validation.success) {
+      return validation.error;
+    }
+
+    const { id, method, params = {} } = validation.request;
+
+    // Handle notifications (no response)
+    if (id === undefined && method.startsWith("notifications/")) {
+      if (method === "notifications/initialized") {
+        return null;
+      }
+      // Unknown notifications are ignored per JSON-RPC 2.0 spec
+      return null;
+    }
+
     try {
-      const { method, params, id } = request;
-
-      let result: any;
-
       switch (method) {
         case "initialize":
-          result = await this.handleInitialize(params);
-          break;
+          return {
+            jsonrpc: "2.0",
+            id,
+            result: await this.handleInitialize(params),
+          };
         case "tools/list":
-          result = await this.handleToolsList(params);
-          break;
-        case "tools/call":
-          result = await this.handleToolCall(params);
-          break;
+          return {
+            jsonrpc: "2.0",
+            id,
+            result: await this.handleToolsList(),
+          };
+        case "tools/call": {
+          const result = await this.handleToolCall(params);
+          return {
+            jsonrpc: "2.0",
+            id,
+            result,
+          };
+        }
         default:
           return this.errorResponse(
             id,
@@ -46,15 +79,9 @@ export class MCPHandler {
             `Method not found: ${method}`
           );
       }
-
-      return {
-        jsonrpc: "2.0",
-        id,
-        result,
-      };
     } catch (error) {
       return this.errorResponse(
-        request.id,
+        id,
         MCPErrorCode.InternalError,
         error instanceof Error ? error.message : "Internal error"
       );
@@ -64,11 +91,20 @@ export class MCPHandler {
   /**
    * Handle initialize request
    */
-  private async handleInitialize(
-    _params: any
-  ): Promise<MCPInitializeResult> {
+  private async handleInitialize(params: unknown): Promise<MCPInitializeResult> {
+    const validated = validateInitializeParams(params);
+    if (!validated.success) {
+      throw new Error(`Invalid initialize params: ${validated.message}`);
+    }
+
+    if (validated.params.protocolVersion !== MCP_PROTOCOL_VERSION) {
+      throw new Error(
+        `Unsupported protocol version: ${validated.params.protocolVersion}. Supported: ${MCP_PROTOCOL_VERSION}`
+      );
+    }
+
     return {
-      protocolVersion: this.protocolVersion,
+      protocolVersion: MCP_PROTOCOL_VERSION,
       capabilities: {
         tools: {},
       },
@@ -82,48 +118,37 @@ export class MCPHandler {
   /**
    * Handle tools/list request
    */
-  private async handleToolsList(_params: any): Promise<MCPToolsListResult> {
+  private async handleToolsList(): Promise<MCPToolsListResult> {
     return {
-      tools: [
-        {
-          name: "x_search",
-          description:
-            "Search X (Twitter) for posts, users, and threads using XAI's Grok search capabilities",
-          inputSchema: {
-            type: "object",
-            properties: {
-              query: {
-                type: "string",
-                description: "The search query to find relevant X posts and content",
-              },
-            },
-            required: ["query"],
-          },
-        },
-      ],
+      tools: [xSearchToolDefinition],
     };
   }
 
   /**
    * Handle tools/call request
    */
-  private async handleToolCall(
-    params: any
-  ): Promise<MCPToolCallResult> {
-    const toolParams = params as MCPToolCallParams;
+  private async handleToolCall(params: unknown): Promise<MCPToolCallResult> {
+    const validated = validateToolCallParams(params);
+    if (!validated.success) {
+      throw new Error(`Invalid tool call params: ${validated.message}`);
+    }
 
-    if (toolParams.name !== "x_search") {
+    const toolParams = validated.params as MCPToolCallParams;
+
+    if (toolParams.name !== xSearchToolDefinition.name) {
       throw new Error(`Unknown tool: ${toolParams.name}`);
     }
 
-    // Validate arguments
-    if (!toolParams.arguments) {
-      throw new Error("Missing arguments for x_search tool");
+    const argsResult = XSearchArgumentsSchema.safeParse(toolParams.arguments || {});
+    if (!argsResult.success) {
+      throw new Error(
+        `Invalid arguments for ${xSearchToolDefinition.name}: ${argsResult.error.errors
+          .map((e) => `${e.path.join(".")}: ${e.message}`)
+          .join(", ")}`
+      );
     }
 
-    // Execute x_search tool
-    const searchParams = toolParams.arguments as XSearchParams;
-    return await this.xSearchTool.execute(searchParams);
+    return await this.xSearchTool.execute(argsResult.data);
   }
 
   /**
@@ -133,7 +158,7 @@ export class MCPHandler {
     id: string | number | undefined,
     code: number,
     message: string,
-    data?: any
+    data?: unknown
   ): JSONRPCResponse {
     return {
       jsonrpc: "2.0",

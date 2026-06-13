@@ -1,9 +1,53 @@
 import { XAIClient, type XAISearchResult, type XAICitation } from "../xai";
 import type { MCPToolCallResult } from "../mcp/types";
+import type { Tool } from "@modelcontextprotocol/sdk/types.js";
 
 export interface XSearchParams {
   query: string;
 }
+
+/**
+ * MCP tool definition for x_search
+ * Single source of truth used by both HTTP and stdio transports.
+ */
+export const xSearchToolDefinition: Tool = {
+  name: "x_search",
+  description:
+    "Search X (Twitter) for posts, users, and threads using XAI's Grok search capabilities",
+  inputSchema: {
+    type: "object",
+    properties: {
+      query: {
+        type: "string",
+        description: "The search query to find relevant X posts and content",
+      },
+    },
+    required: ["query"],
+  },
+  outputSchema: {
+    type: "object",
+    properties: {
+      content: {
+        type: "array",
+        items: {
+          type: "object",
+          properties: {
+            type: { type: "string" },
+            text: { type: "string" },
+          },
+          required: ["type"],
+        },
+      },
+      isError: { type: "boolean" },
+    },
+    required: ["content"],
+  },
+  annotations: {
+    title: "X Search",
+    readOnlyHint: true,
+    openWorldHint: true,
+  },
+};
 
 /**
  * X Search Tool - searches X (Twitter) using XAI's Grok API

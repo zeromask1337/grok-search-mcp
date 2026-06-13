@@ -132,7 +132,7 @@ Choose one of two modes:
 
 ### Remote Mode (HTTP) - Recommended for continuous use
 
-Server must be running separately (`npm run dev`). OpenCode connects via HTTP.
+Server must be running separately (`bun run dev`). OpenCode connects via HTTP.
 
 Edit `~/.config/opencode/opencode.json`:
 
@@ -176,7 +176,7 @@ Replace `/absolute/path/to/xai-mcp-server` with your actual repository path (use
 
 | Aspect | Remote (HTTP) | Local (Stdio) |
 |--------|---------------|---------------|
-| Server startup | Manual (`npm run dev`) | Automatic (spawned by OpenCode) |
+| Server startup | Manual (`bun run dev`) | Automatic (spawned by OpenCode) |
 | Resource usage | Continuous 24/7 | Only when needed |
 | Connection | Over HTTP localhost | Direct stdio |
 | Best for | Continuous development | On-demand usage |

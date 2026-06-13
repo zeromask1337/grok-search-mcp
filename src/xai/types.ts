@@ -43,12 +43,14 @@ export const XAIResponseSchema = z.object({
   object: z.literal("response"),
   status: z.string(),
   model: z.string(),
-  output: z.array(z.union([XAIMessageOutputSchema, z.any()])),
-  usage: z.object({
-    prompt_tokens: z.number(),
-    completion_tokens: z.number(),
-    total_tokens: z.number(),
-  }).optional(),
+  output: z.array(z.unknown()),
+  usage: z
+    .object({
+      prompt_tokens: z.number(),
+      completion_tokens: z.number(),
+      total_tokens: z.number(),
+    })
+    .optional(),
 });
 
 // Exported Types
@@ -71,4 +73,6 @@ export interface XAIClientConfig {
   apiKey: string;
   model?: string;
   baseURL?: string;
+  timeoutMs?: number;
+  maxRetries?: number;
 }
