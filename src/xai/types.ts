@@ -14,7 +14,6 @@ export const XAIRequestSchema = z.object({
   model: z.string().default("grok-4-1-fast"),
   input: z.array(XAIMessageSchema),
   tools: z.array(XAIToolSchema),
-  stream: z.boolean().optional(),
 });
 
 // XAI Responses API Response Types
@@ -46,9 +45,9 @@ export const XAIResponseSchema = z.object({
   output: z.array(z.unknown()),
   usage: z
     .object({
-      prompt_tokens: z.number(),
-      completion_tokens: z.number(),
-      total_tokens: z.number(),
+      prompt_tokens: z.number().optional(),
+      completion_tokens: z.number().optional(),
+      total_tokens: z.number().optional(),
     })
     .optional(),
 });

@@ -39,8 +39,8 @@ OpenCode → MCP Server (localhost:3000) → XAI Responses API
 
 ### ✅ Phase 0: Project Setup
 - [x] Create project structure
-- [x] Initialize project with npm
-- [x] Install dependencies (hono, zod)
+- [x] Initialize project with bun
+- [x] Install dependencies (hono, zod, mcp sdk)
 - [x] Setup TypeScript config
 - [x] Create .env.example
 - [x] Initial commit
@@ -49,8 +49,8 @@ OpenCode → MCP Server (localhost:3000) → XAI Responses API
 - [x] Create XAI client with Responses API
 - [x] Implement x_search request formatting
 - [x] Add response parsing with citations
-- [x] Implement SSE streaming support
-- [x] Add error handling
+- [x] Remove legacy SSE streaming support
+- [x] Add error handling and retry logic
 - [x] Test XAI client directly
 
 ### ✅ Phase 2: MCP Server (1-1.5 hours)
@@ -68,7 +68,7 @@ OpenCode → MCP Server (localhost:3000) → XAI Responses API
 - [x] Wire XAI client to MCP handler
 - [x] Format responses for MCP
 - [x] Handle citations
-- [x] Add streaming support
+- [x] Remove streaming support in favor of non-streaming responses
 - [x] Error handling and timeouts
 
 ### ✅ Phase 4: Testing (30 min)
@@ -95,7 +95,6 @@ Total: 3.5 - 5 hours (Actual: ~3 hours)
 - **Hono**: Lightweight HTTP framework
 - **No Auth**: Localhost only, single user
 - **No Database**: Stateless server
-- **SSE Streaming**: Real-time responses
 
 ## Final Deliverables
 - Full MCP server with x_search tool

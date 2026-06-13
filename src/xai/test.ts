@@ -9,7 +9,7 @@ async function testXAIClient() {
 
   if (!apiKey) {
     console.error("Error: XAI_API_KEY environment variable not set");
-    console.log("Usage: XAI_API_KEY=your_key npm run dev");
+    console.log("Usage: XAI_API_KEY=your_key bun run src/xai/test.ts");
     process.exit(1);
   }
 
@@ -33,15 +33,7 @@ async function testXAIClient() {
       console.log(`     ${citation.url || "No URL"}`);
     });
 
-    // Test streaming
-    console.log("\n\n--- Streaming mode ---");
-    console.log("Streaming response:");
-    for await (const chunk of client.searchStream(
-      "What is Bun runtime?"
-    )) {
-      process.stdout.write(chunk);
-    }
-    console.log("\n\nStreaming complete!");
+    console.log("\n\nTest complete!");
   } catch (error) {
     console.error("Error testing XAI client:", error);
     process.exit(1);

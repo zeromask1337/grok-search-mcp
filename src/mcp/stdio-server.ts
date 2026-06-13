@@ -34,14 +34,23 @@ export async function startStdioServer(xSearchTool: XSearchTool): Promise<void> 
   // Handle tools/call request
   server.setRequestHandler(CallToolRequestSchema, async (request) => {
     if (request.params.name !== xSearchToolDefinition.name) {
-      throw new Error(`Unknown tool: ${request.params.name}`);
+      return {
+        content: [{ type: "text", text: `Unknown tool: ${request.params.name}` }],
+        isError: true,
+      };
     }
 
     const query = (request.params.arguments as XSearchParams | undefined)?.query;
     if (!query || typeof query !== "string") {
-      throw new Error(
-        `Invalid arguments for ${xSearchToolDefinition.name}: query is required and must be a non-empty string`
-      );
+      return {
+        content: [
+          {
+            type: "text",
+            text: `Invalid arguments for ${xSearchToolDefinition.name}: query is required and must be a non-empty string`,
+          },
+        ],
+        isError: true,
+      };
     }
 
     const result = await xSearchTool.execute({ query });

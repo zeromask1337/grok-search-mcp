@@ -3,8 +3,8 @@
  * 
  * Prerequisites:
  * 1. Set XAI_API_KEY environment variable
- * 2. Start the server: npm run dev
- * 3. Run this test: node --loader ts-node/esm test-integration.ts
+ * 2. Start the server: bun run dev
+ * 3. Run this test: bun run test-integration.ts
  */
 
 const PORT = process.env.PORT || "3000";
@@ -47,7 +47,7 @@ async function runTests() {
       }
     } catch (error) {
       logTest("Health check", false, error instanceof Error ? error.message : "Unknown error");
-      console.log("\n❌ Server is not running. Start it with: npm run dev\n");
+      console.log("\n❌ Server is not running. Start it with: bun run dev\n");
       process.exit(1);
     }
 

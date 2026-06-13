@@ -12,8 +12,24 @@ export interface XSearchParams {
  */
 export const xSearchToolDefinition: Tool = {
   name: "x_search",
-  description:
-    "Search X (Twitter) for posts, users, and threads using XAI's Grok search capabilities",
+  description: `Search X (formerly Twitter) for posts, users, and threads using XAI's Grok agentic search.
+
+This is a read-only search tool. It does not create, modify, or delete any X content. The query is sent to XAI's Responses API, which performs a live search on X and returns a text summary with Markdown citations to the referenced posts.
+
+Args:
+  - query (string, required): The search query. Be specific to get relevant results.
+
+Returns:
+  A text response with search results and a "Sources:" section containing Markdown links to the X posts referenced.
+
+Examples:
+  - "Latest news about TypeScript"
+  - "What did xAI announce this week?"
+  - "Official @xAI account"
+
+Error handling:
+  - Returns an error if the query is missing or empty.
+  - Returns an error if the XAI API request fails or times out.`,
   inputSchema: {
     type: "object",
     properties: {
@@ -45,6 +61,8 @@ export const xSearchToolDefinition: Tool = {
   annotations: {
     title: "X Search",
     readOnlyHint: true,
+    destructiveHint: false,
+    idempotentHint: true,
     openWorldHint: true,
   },
 };
@@ -70,7 +88,7 @@ export class XSearchTool {
         throw new Error("Query parameter is required and must be a string");
       }
 
-      console.log(`[x_search] Executing search: "${query}"`);
+      console.error(`[x_search] Executing search: "${query}"`);
 
       // Call XAI API
       const result = await this.client.search(query);

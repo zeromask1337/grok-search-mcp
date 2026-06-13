@@ -164,6 +164,7 @@ if (mode === "stdio") {
 export default honoApp
   ? {
       port: serverPort,
+      hostname: "127.0.0.1",
       fetch: honoApp.fetch,
     }
   : undefined;

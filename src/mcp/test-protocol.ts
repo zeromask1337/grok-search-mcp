@@ -1,7 +1,7 @@
 /**
  * Test MCP protocol compliance
- * Run the server first: npm run dev
- * Then run: node --loader ts-node/esm src/mcp/test-protocol.ts
+ * Run the server first: bun run dev
+ * Then run: bun run src/mcp/test-protocol.ts
  */
 
 const MCP_URL = "http://localhost:3000/mcp";

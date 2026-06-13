@@ -2,13 +2,29 @@
   "name": "xai-mcp-server",
   "version": "0.1.0",
   "description": "MCP server for XAI x_search tool",
+  "license": "MIT",
   "type": "module",
   "bin": {
-    "xai-mcp-server": "src/index.ts"
+    "xai-mcp-server": "dist/index.js"
+  },
+  "files": [
+    "dist",
+    "src",
+    "README.md",
+    "SETUP.md",
+    "TESTING.md",
+    "PLAN.md",
+    "evaluation.xml",
+    "LICENSE",
+    ".env.example"
+  ],
+  "exports": {
+    ".": "./dist/index.js"
   },
   "scripts": {
     "dev": "bun run --watch src/index.ts",
     "start": "bun run src/index.ts",
+    "build": "bun build ./src/index.ts --outdir ./dist --target bun",
     "typecheck": "tsc --noEmit",
     "test": "bun test"
   },
@@ -18,7 +34,6 @@
     "zod": "^3.24.1"
   },
   "devDependencies": {
-    "@types/bun": "latest",
     "bun-types": "latest",
     "typescript": "^5.9.3"
   }

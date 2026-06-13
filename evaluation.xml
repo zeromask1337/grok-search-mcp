@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<evaluation>
+  <qa_pair>
+    <question>In the summer of 2023, Elon Musk announced the launch of a new artificial intelligence company on X. What is the name of that company?</question>
+    <answer>xAI</answer>
+  </qa_pair>
+
+  <qa_pair>
+    <question>Search X for the verified corporate account that publishes xAI product updates. What is that account's username (including the @ symbol)?</question>
+    <answer>@xAI</answer>
+  </qa_pair>
+
+  <qa_pair>
+    <question>Find the X post where Elon Musk announced that xAI's first major AI training facility had come online. What name did he give to that facility?</question>
+    <answer>Colossus</answer>
+  </qa_pair>
+
+  <qa_pair>
+    <question>Which U.S. city did Elon Musk identify on X as the location of xAI's first major AI training facility?</question>
+    <answer>Memphis</answer>
+  </qa_pair>
+
+  <qa_pair>
+    <question>Find the X post from xAI's official account announcing the open-source release of its first large language model. What is the model's name?</question>
+    <answer>Grok-1</answer>
+  </qa_pair>
+
+  <qa_pair>
+    <question>What is the name of the conversational AI assistant developed by xAI, as referenced in official xAI posts on X?</question>
+    <answer>Grok</answer>
+  </qa_pair>
+
+  <qa_pair>
+    <question>In mid-2024, xAI announced a new version of its conversational assistant with a number in its name. What is that number?</question>
+    <answer>2</answer>
+  </qa_pair>
+
+  <qa_pair>
+    <question>Which paid subscription tier on X did Elon Musk announce would receive early access to xAI's conversational assistant?</question>
+    <answer>Premium+</answer>
+  </qa_pair>
+
+  <qa_pair>
+    <question>Which computer hardware company did Elon Musk say on X was assembling half of the racks for xAI's first major AI training facility?</question>
+    <answer>Dell</answer>
+  </qa_pair>
+
+  <qa_pair>
+    <question>Find the X post where xAI announced the open-source release of its first large language model. What was the month and year of that announcement? Answer in YYYY-MM format.</question>
+    <answer>2024-03</answer>
+  </qa_pair>
+</evaluation>

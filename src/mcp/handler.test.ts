@@ -121,8 +121,9 @@ describe("MCPHandler", () => {
       },
     });
     assertResponse(response);
-    expect(response.error).toBeDefined();
-    expect(response.error?.code).toBe(-32603);
+    expect(response.error).toBeUndefined();
+    expect(response.result?.isError).toBe(true);
+    expect(response.result?.content[0].text).toContain("Invalid arguments");
   });
 
   it("rejects unknown methods", async () => {

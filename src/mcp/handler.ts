@@ -136,16 +136,25 @@ export class MCPHandler {
     const toolParams = validated.params as MCPToolCallParams;
 
     if (toolParams.name !== xSearchToolDefinition.name) {
-      throw new Error(`Unknown tool: ${toolParams.name}`);
+      return {
+        content: [{ type: "text", text: `Unknown tool: ${toolParams.name}` }],
+        isError: true,
+      };
     }
 
     const argsResult = XSearchArgumentsSchema.safeParse(toolParams.arguments || {});
     if (!argsResult.success) {
-      throw new Error(
-        `Invalid arguments for ${xSearchToolDefinition.name}: ${argsResult.error.errors
-          .map((e) => `${e.path.join(".")}: ${e.message}`)
-          .join(", ")}`
-      );
+      return {
+        content: [
+          {
+            type: "text",
+            text: `Invalid arguments for ${xSearchToolDefinition.name}: ${argsResult.error.errors
+              .map((e) => `${e.path.join(".")}: ${e.message}`)
+              .join(", ")}`,
+          },
+        ],
+        isError: true,
+      };
     }
 
     return await this.xSearchTool.execute(argsResult.data);
