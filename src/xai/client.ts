@@ -4,7 +4,18 @@ import {
   type XAIResponse,
   XAIResponseSchema,
   type XAISearchResult,
+  type XAIMessageOutput,
 } from "./types";
+
+class XAIAPIError extends Error {
+  constructor(
+    message: string,
+    public readonly status: number
+  ) {
+    super(message);
+    this.name = "XAIAPIError";
+  }
+}
 
 export class XAIClient {
   private apiKey: string;
@@ -58,17 +69,14 @@ export class XAIClient {
    * Parse XAI response and extract text + citations
    */
   private parseResponse(data: XAIResponse): XAISearchResult {
-    // Find the message output in the response
     const messageOutput = data.output.find(
-      (item): item is { type: "message"; id: string; role: string; content: Array<{ type: "output_text"; text: string; annotations?: Array<{ type: string; url?: string; title?: string; snippet?: string }> }> } =>
-        item != null && typeof item === "object" && "type" in item && item.type === "message"
+      (item): item is XAIMessageOutput => item.type === "message"
     );
 
-    if (!messageOutput || !("content" in messageOutput)) {
+    if (!messageOutput) {
       throw new Error("No message content in XAI response");
     }
 
-    // Extract text content
     const textContent = messageOutput.content.find((c) => c.type === "output_text");
 
     if (!textContent) {
@@ -77,7 +85,7 @@ export class XAIClient {
 
     return {
       id: data.id,
-      text: textContent.text || "",
+      text: textContent.text,
       citations: textContent.annotations || [],
     };
   }
@@ -106,8 +114,9 @@ export class XAIClient {
 
         if (!response.ok) {
           const errorText = await response.text();
-          const error = new Error(
-            `XAI API error (${response.status}): ${errorText}`
+          const error = new XAIAPIError(
+            `XAI API error (${response.status}): ${errorText}`,
+            response.status
           );
 
           // Retry on 5xx and 429 rate limits
@@ -124,6 +133,11 @@ export class XAIClient {
         return response;
       } catch (error) {
         clearTimeout(timeout);
+
+        // Do not retry non-retryable HTTP errors (4xx except 429)
+        if (error instanceof XAIAPIError && error.status < 500 && error.status !== 429) {
+          throw error;
+        }
 
         if (error instanceof Error && error.name === "AbortError") {
           lastError = new Error(`XAI API request timed out after ${this.timeoutMs}ms`);

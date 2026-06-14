@@ -19,8 +19,7 @@ async function testXAIClient() {
   console.log("Query: What is the latest news about Bun runtime?\n");
 
   try {
-    // Test non-streaming
-    console.log("--- Non-streaming mode ---");
+    console.log("--- XAI search test ---");
     const result = await client.search(
       "What is the latest news about Bun runtime?"
     );

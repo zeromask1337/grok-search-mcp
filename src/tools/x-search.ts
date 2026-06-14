@@ -1,18 +1,28 @@
+import { z } from "zod";
+import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import type { CallToolResult, ToolAnnotations } from "@modelcontextprotocol/sdk/types.js";
 import { XAIClient, type XAISearchResult, type XAICitation } from "../xai";
-import type { MCPToolCallResult } from "../mcp/types";
-import type { Tool } from "@modelcontextprotocol/sdk/types.js";
 
-export interface XSearchParams {
-  query: string;
-}
+export const XSearchInputSchema = z
+  .object({
+    query: z
+      .string()
+      .min(1, "Query must be a non-empty string")
+      .describe("The search query to find relevant X posts and content"),
+  })
+  .strict();
 
-/**
- * MCP tool definition for x_search
- * Single source of truth used by both HTTP and stdio transports.
- */
-export const xSearchToolDefinition: Tool = {
-  name: "x_search",
-  description: `Search X (formerly Twitter) for posts, users, and threads using XAI's Grok agentic search.
+export type XSearchParams = z.infer<typeof XSearchInputSchema>;
+
+export const xSearchToolAnnotations: ToolAnnotations = {
+  title: "X Search",
+  readOnlyHint: true,
+  destructiveHint: false,
+  idempotentHint: true,
+  openWorldHint: true,
+};
+
+export const xSearchToolDescription = `Search X (formerly Twitter) for posts, users, and threads using XAI's Grok agentic search.
 
 This is a read-only search tool. It does not create, modify, or delete any X content. The query is sent to XAI's Responses API, which performs a live search on X and returns a text summary with Markdown citations to the referenced posts.
 
@@ -29,43 +39,7 @@ Examples:
 
 Error handling:
   - Returns an error if the query is missing or empty.
-  - Returns an error if the XAI API request fails or times out.`,
-  inputSchema: {
-    type: "object",
-    properties: {
-      query: {
-        type: "string",
-        description: "The search query to find relevant X posts and content",
-      },
-    },
-    required: ["query"],
-  },
-  outputSchema: {
-    type: "object",
-    properties: {
-      content: {
-        type: "array",
-        items: {
-          type: "object",
-          properties: {
-            type: { type: "string" },
-            text: { type: "string" },
-          },
-          required: ["type"],
-        },
-      },
-      isError: { type: "boolean" },
-    },
-    required: ["content"],
-  },
-  annotations: {
-    title: "X Search",
-    readOnlyHint: true,
-    destructiveHint: false,
-    idempotentHint: true,
-    openWorldHint: true,
-  },
-};
+  - Returns an error if the XAI API request fails or times out.`;
 
 /**
  * X Search Tool - searches X (Twitter) using XAI's Grok API
@@ -80,20 +54,14 @@ export class XSearchTool {
   /**
    * Execute X search and format response for MCP
    */
-  async execute(params: XSearchParams): Promise<MCPToolCallResult> {
+  async execute(params: XSearchParams): Promise<CallToolResult> {
     try {
       const { query } = params;
 
-      if (!query || typeof query !== "string") {
-        throw new Error("Query parameter is required and must be a string");
-      }
-
       console.error(`[x_search] Executing search: "${query}"`);
 
-      // Call XAI API
       const result = await this.client.search(query);
 
-      // Format response for MCP
       return this.formatResult(result);
     } catch (error) {
       console.error("[x_search] Error:", error);
@@ -114,10 +82,9 @@ export class XSearchTool {
   /**
    * Format XAI search result for MCP protocol
    */
-  private formatResult(result: XAISearchResult): MCPToolCallResult {
+  private formatResult(result: XAISearchResult): CallToolResult {
     const citationText = this.formatCitations(result.citations);
 
-    // Combine text and citations
     const fullText = citationText
       ? `${result.text}\n\n${citationText}`
       : result.text;
@@ -147,7 +114,7 @@ export class XSearchTool {
         const url = citation.url || "";
         return url ? `${index + 1}. [${title}](${url})` : null;
       })
-      .filter(Boolean);
+      .filter((line): line is string => line !== null);
 
     if (citationLines.length === 0) {
       return "";
@@ -155,4 +122,22 @@ export class XSearchTool {
 
     return `**Sources:**\n${citationLines.join("\n")}`;
   }
+}
+
+/**
+ * Register the x_search tool with an McpServer instance.
+ */
+export function registerXSearchTool(server: McpServer, client: XAIClient): void {
+  const tool = new XSearchTool(client);
+
+  server.registerTool(
+    "x_search",
+    {
+      title: xSearchToolAnnotations.title,
+      description: xSearchToolDescription,
+      inputSchema: XSearchInputSchema,
+      annotations: xSearchToolAnnotations,
+    },
+    async (args) => tool.execute(args)
+  );
 }

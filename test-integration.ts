@@ -1,6 +1,6 @@
 /**
  * Integration test for XAI MCP Server
- * 
+ *
  * Prerequisites:
  * 1. Set XAI_API_KEY environment variable
  * 2. Start the server: bun run dev
@@ -19,6 +19,8 @@ interface TestResult {
 
 const results: TestResult[] = [];
 
+let protocolVersion = "2024-11-05";
+
 function logTest(name: string, passed: boolean, error?: string) {
   results.push({ name, passed, error });
   const icon = passed ? "✅" : "❌";
@@ -26,6 +28,15 @@ function logTest(name: string, passed: boolean, error?: string) {
   if (error) {
     console.log(`   Error: ${error}`);
   }
+}
+
+function mcpHeaders(extra: Record<string, string> = {}) {
+  return {
+    "Content-Type": "application/json",
+    Accept: "application/json, text/event-stream",
+    "Mcp-Protocol-Version": protocolVersion,
+    ...extra,
+  };
 }
 
 async function runTests() {
@@ -39,14 +50,18 @@ async function runTests() {
     try {
       const healthResponse = await fetch(HEALTH_URL);
       const healthData = await healthResponse.json();
-      
+
       if (healthResponse.ok && healthData.status === "healthy") {
         logTest("Health check", true);
       } else {
         logTest("Health check", false, "Server not healthy");
       }
     } catch (error) {
-      logTest("Health check", false, error instanceof Error ? error.message : "Unknown error");
+      logTest(
+        "Health check",
+        false,
+        error instanceof Error ? error.message : "Unknown error"
+      );
       console.log("\n❌ Server is not running. Start it with: bun run dev\n");
       process.exit(1);
     }
@@ -56,7 +71,10 @@ async function runTests() {
     try {
       const initResponse = await fetch(MCP_URL, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json, text/event-stream",
+        },
         body: JSON.stringify({
           jsonrpc: "2.0",
           id: 1,
@@ -70,16 +88,23 @@ async function runTests() {
       });
 
       const initData = await initResponse.json();
-      
+
       if (initData.result?.protocolVersion && initData.result?.serverInfo) {
+        protocolVersion = initData.result.protocolVersion;
         logTest("MCP initialize", true);
         console.log(`   Protocol: ${initData.result.protocolVersion}`);
-        console.log(`   Server: ${initData.result.serverInfo.name} v${initData.result.serverInfo.version}`);
+        console.log(
+          `   Server: ${initData.result.serverInfo.name} v${initData.result.serverInfo.version}`
+        );
       } else {
         logTest("MCP initialize", false, "Invalid response structure");
       }
     } catch (error) {
-      logTest("MCP initialize", false, error instanceof Error ? error.message : "Unknown error");
+      logTest(
+        "MCP initialize",
+        false,
+        error instanceof Error ? error.message : "Unknown error"
+      );
     }
 
     // Test 3: MCP Tools List
@@ -87,7 +112,7 @@ async function runTests() {
     try {
       const listResponse = await fetch(MCP_URL, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: mcpHeaders(),
         body: JSON.stringify({
           jsonrpc: "2.0",
           id: 2,
@@ -96,12 +121,18 @@ async function runTests() {
       });
 
       const listData = await listResponse.json();
-      
+
       if (listData.result?.tools && Array.isArray(listData.result.tools)) {
-        const hasXSearch = listData.result.tools.some((t: any) => t.name === "x_search");
+        const hasXSearch = listData.result.tools.some(
+          (t: { name?: string }) => t.name === "x_search"
+        );
         if (hasXSearch) {
           logTest("MCP tools/list", true);
-          console.log(`   Found ${listData.result.tools.length} tool(s): ${listData.result.tools.map((t: any) => t.name).join(", ")}`);
+          console.log(
+            `   Found ${listData.result.tools.length} tool(s): ${listData.result.tools
+              .map((t: { name?: string }) => t.name)
+              .join(", ")}`
+          );
         } else {
           logTest("MCP tools/list", false, "x_search tool not found");
         }
@@ -109,7 +140,11 @@ async function runTests() {
         logTest("MCP tools/list", false, "Invalid tools list structure");
       }
     } catch (error) {
-      logTest("MCP tools/list", false, error instanceof Error ? error.message : "Unknown error");
+      logTest(
+        "MCP tools/list",
+        false,
+        error instanceof Error ? error.message : "Unknown error"
+      );
     }
 
     // Test 4: MCP Tool Call - x_search (requires XAI API key)
@@ -118,7 +153,7 @@ async function runTests() {
     try {
       const callResponse = await fetch(MCP_URL, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: mcpHeaders(),
         body: JSON.stringify({
           jsonrpc: "2.0",
           id: 3,
@@ -133,22 +168,34 @@ async function runTests() {
       });
 
       const callData = await callResponse.json();
-      
+
       if (callData.result?.content && Array.isArray(callData.result.content)) {
-        const textContent = callData.result.content.find((c: any) => c.type === "text");
+        const textContent = callData.result.content.find(
+          (c: { type?: string; text?: string }) => c.type === "text"
+        );
         if (textContent?.text && !callData.result.isError) {
           logTest("MCP tool call - x_search", true);
-          console.log(`   Response length: ${textContent.text.length} characters`);
+          console.log(
+            `   Response length: ${textContent.text.length} characters`
+          );
           console.log(`   Preview: ${textContent.text.slice(0, 100)}...`);
-          
+
           // Check for citations
           if (textContent.text.includes("**Sources:**")) {
             console.log("   ✓ Citations included");
           }
         } else if (callData.result.isError) {
-          logTest("MCP tool call - x_search", false, textContent?.text || "Tool returned error");
+          logTest(
+            "MCP tool call - x_search",
+            false,
+            textContent?.text || "Tool returned error"
+          );
         } else {
-          logTest("MCP tool call - x_search", false, "No text content in response");
+          logTest(
+            "MCP tool call - x_search",
+            false,
+            "No text content in response"
+          );
         }
       } else if (callData.error) {
         logTest("MCP tool call - x_search", false, callData.error.message);
@@ -156,7 +203,11 @@ async function runTests() {
         logTest("MCP tool call - x_search", false, "Invalid response structure");
       }
     } catch (error) {
-      logTest("MCP tool call - x_search", false, error instanceof Error ? error.message : "Unknown error");
+      logTest(
+        "MCP tool call - x_search",
+        false,
+        error instanceof Error ? error.message : "Unknown error"
+      );
     }
 
     // Test 5: Error handling - unknown method
@@ -164,7 +215,7 @@ async function runTests() {
     try {
       const errorResponse = await fetch(MCP_URL, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: mcpHeaders(),
         body: JSON.stringify({
           jsonrpc: "2.0",
           id: 4,
@@ -173,14 +224,22 @@ async function runTests() {
       });
 
       const errorData = await errorResponse.json();
-      
+
       if (errorData.error && errorData.error.code === -32601) {
         logTest("Error handling - unknown method", true);
       } else {
-        logTest("Error handling - unknown method", false, "Expected method not found error");
+        logTest(
+          "Error handling - unknown method",
+          false,
+          "Expected method not found error"
+        );
       }
     } catch (error) {
-      logTest("Error handling - unknown method", false, error instanceof Error ? error.message : "Unknown error");
+      logTest(
+        "Error handling - unknown method",
+        false,
+        error instanceof Error ? error.message : "Unknown error"
+      );
     }
 
     // Test 6: Error handling - missing query
@@ -188,7 +247,7 @@ async function runTests() {
     try {
       const errorResponse = await fetch(MCP_URL, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: mcpHeaders(),
         body: JSON.stringify({
           jsonrpc: "2.0",
           id: 5,
@@ -201,35 +260,38 @@ async function runTests() {
       });
 
       const errorData = await errorResponse.json();
-      
+
       if (errorData.result?.isError || errorData.error) {
         logTest("Error handling - missing query", true);
       } else {
         logTest("Error handling - missing query", false, "Should have returned error");
       }
     } catch (error) {
-      logTest("Error handling - missing query", false, error instanceof Error ? error.message : "Unknown error");
+      logTest(
+        "Error handling - missing query",
+        false,
+        error instanceof Error ? error.message : "Unknown error"
+      );
     }
 
     // Summary
     console.log("\n" + "=".repeat(60));
-    const passed = results.filter(r => r.passed).length;
+    const passed = results.filter((r) => r.passed).length;
     const total = results.length;
     const percentage = Math.round((passed / total) * 100);
-    
+
     console.log(`\n📊 Test Results: ${passed}/${total} passed (${percentage}%)`);
-    
+
     if (passed === total) {
       console.log("\n🎉 All tests passed!");
       process.exit(0);
     } else {
       console.log("\n⚠️  Some tests failed. Review errors above.");
-      const failed = results.filter(r => !r.passed);
+      const failed = results.filter((r) => !r.passed);
       console.log("\nFailed tests:");
-      failed.forEach(f => console.log(`  - ${f.name}: ${f.error}`));
+      failed.forEach((f) => console.log(`  - ${f.name}: ${f.error}`));
       process.exit(1);
     }
-
   } catch (error) {
     console.error("\n💥 Test suite error:", error);
     process.exit(1);

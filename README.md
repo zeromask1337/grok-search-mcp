@@ -10,7 +10,7 @@ This server wraps XAI's Grok agentic search capabilities (X/Twitter search) and 
 
 - **X Search** - Search X (Twitter) for posts, users, and threads via XAI's Grok API
 - **Dual Mode** - Works as HTTP server (remote mode) or stdio subprocess (local mode)
-- **Simple Setup** - Runs locally, no authentication needed
+- **Simple Setup** - Runs locally; only an XAI API key is required
 - **Citations** - Automatic citation extraction from search results
 - **MCP Protocol** - Full JSON-RPC 2.0 compliance
 
@@ -91,7 +91,7 @@ Add to `~/.config/opencode/opencode.json`:
   "mcp": {
     "xai": {
       "type": "local",
-      "command": ["bun", "run", "/absolute/path/to/xai-mcp-server/src/index.ts", "--stdio"],
+      "command": ["pnpx", "@d3monizer/xai-mcp-server@latest", "--stdio"],
       "environment": {
         "XAI_API_KEY": "xai-your-key-here"
       },
@@ -101,7 +101,7 @@ Add to `~/.config/opencode/opencode.json`:
 }
 ```
 
-**Important:** Use absolute path to the repository (e.g., `/Users/username/projects/xai-mcp-server`).
+**Important:** `pnpx` installs/runs the package from npm. Make sure the package is published first (see [SETUP.md](./SETUP.md)).
 
 ### 3B. Configure OpenCode - Remote Mode
 
@@ -136,7 +136,7 @@ Add to `~/.config/opencode/opencode.json`:
   "mcp": {
     "xai": {
       "type": "local",
-      "command": ["bun", "run", "/absolute/path/to/xai-mcp-server/src/index.ts", "--stdio"],
+      "command": ["pnpx", "@d3monizer/xai-mcp-server@latest", "--stdio"],
       "environment": {
         "XAI_API_KEY": "your-xai-api-key"
       },
@@ -146,7 +146,7 @@ Add to `~/.config/opencode/opencode.json`:
 }
 ```
 
-Replace `/absolute/path/to/xai-mcp-server` with the actual path to your cloned repository.
+This runs the published npm package via `pnpx`, the same pattern used by the other MCP servers.
 
 ### 4. Use in OpenCode
 
@@ -228,6 +228,7 @@ Request:
 ```bash
 curl -X POST http://localhost:3000/mcp \
   -H "Content-Type: application/json" \
+  -H "Accept: application/json, text/event-stream" \
   -d '{
     "jsonrpc": "2.0",
     "id": 1,
@@ -251,7 +252,9 @@ Response:
   "result": {
     "protocolVersion": "2024-11-05",
     "capabilities": {
-      "tools": {}
+      "tools": {
+        "listChanged": true
+      }
     },
     "serverInfo": {
       "name": "xai-mcp-server",
@@ -267,6 +270,8 @@ Request:
 ```bash
 curl -X POST http://localhost:3000/mcp \
   -H "Content-Type: application/json" \
+  -H "Accept: application/json, text/event-stream" \
+  -H "Mcp-Protocol-Version: 2024-11-05" \
   -d '{
     "jsonrpc": "2.0",
     "id": 2,
@@ -283,16 +288,26 @@ Response:
     "tools": [
       {
         "name": "x_search",
-        "description": "Search X (Twitter) for posts, users, and threads using XAI's Grok search capabilities",
+        "title": "X Search",
+        "description": "Search X (formerly Twitter) for posts, users, and threads using XAI's Grok agentic search.",
         "inputSchema": {
           "type": "object",
           "properties": {
             "query": {
               "type": "string",
+              "minLength": 1,
               "description": "The search query to find relevant X posts and content"
             }
           },
-          "required": ["query"]
+          "required": ["query"],
+          "additionalProperties": false
+        },
+        "annotations": {
+          "title": "X Search",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true
         }
       }
     ]
@@ -306,6 +321,8 @@ Request:
 ```bash
 curl -X POST http://localhost:3000/mcp \
   -H "Content-Type: application/json" \
+  -H "Accept: application/json, text/event-stream" \
+  -H "Mcp-Protocol-Version: 2024-11-05" \
   -d '{
     "jsonrpc": "2.0",
     "id": 3,
@@ -363,7 +380,7 @@ Send to stdin:
 
 Receive from stdout:
 ```json
-{"jsonrpc":"2.0","id":2,"result":{"tools":[{"name":"x_search","description":"Search X (Twitter) for posts, users, and threads using XAI's Grok search capabilities","inputSchema":{"type":"object","properties":{"query":{"type":"string","description":"The search query to find relevant X posts and content"}},"required":["query"]}}]}}
+{"jsonrpc":"2.0","id":2,"result":{"tools":[{"name":"x_search","description":"Search X (formerly Twitter) for posts, users, and threads using XAI's Grok agentic search.","inputSchema":{"type":"object","properties":{"query":{"type":"string","description":"The search query to find relevant X posts and content"}},"required":["query"]},"annotations":{"title":"X Search","readOnlyHint":true,"destructiveHint":false,"idempotentHint":true,"openWorldHint":true}}]}}
 ```
 
 #### Call x_search Tool
@@ -389,12 +406,13 @@ For debugging purposes, you can test the stdio mode manually:
   echo '{"jsonrpc":"2.0","id":2,"method":"tools/list"}'
   sleep 0.1
   echo '{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"x_search","arguments":{"query":"test"}}}'
-) | bun run /path/to/xai-mcp-server/src/index.ts --stdio
+) | XAI_API_KEY=dummy pnpx @d3monizer/xai-mcp-server@latest --stdio
 ```
 
 Output:
 - Logs appear on stderr: `[xai-mcp-server] Connected via stdio transport`
 - MCP responses appear on stdout: `{"jsonrpc":"2.0",...}`
+- Replace `dummy` with your real key for an actual tool call
 
 ## Tool: x_search
 
@@ -422,7 +440,7 @@ Searches X (Twitter) using XAI's Grok API.
   "content": [
     {
       "type": "text",
-      "text": "Search results with formatted citations..."
+      "text": "Search results with formatted citations...\n\n**Sources:**\n1. [Title](https://x.com/...)"
     }
   ],
   "isError": false
@@ -438,6 +456,8 @@ Environment variables (`.env`):
 | `XAI_API_KEY` | Yes | - | Your XAI API key |
 | `PORT` | No | `3000` | Server port (remote mode only) |
 | `XAI_MODEL` | No | `grok-4-1-fast` | XAI model to use |
+| `XAI_TIMEOUT_MS` | No | `30000` | XAI API request timeout in milliseconds |
+| `XAI_MAX_RETRIES` | No | `2` | Max retries on transient XAI API failures |
 | `LOG_LEVEL` | No | `info` | Logging level |
 
 ## Project Structure
@@ -445,17 +465,17 @@ Environment variables (`.env`):
 ```
 xai-mcp-server/
 ├── src/
-│   ├── index.ts               # Server entry point (detects mode)
+│   ├── index.ts               # Server entry point (HTTP/stdio mode)
 │   ├── config.ts              # Configuration
-│   ├── mcp/
-│   │   ├── handler.ts         # MCP JSON-RPC protocol handler
-│   │   ├── stdio-server.ts    # MCP stdio transport (local mode)
-│   │   └── types.ts           # MCP type definitions
 │   ├── xai/
 │   │   ├── client.ts          # XAI API client
-│   │   └── types.ts           # XAI type definitions
-│   └── tools/
-│       └── x-search.ts        # x_search tool implementation
+│   │   ├── client.test.ts     # XAI client unit tests
+│   │   ├── types.ts           # XAI type definitions
+│   │   └── test.ts            # XAI client manual test
+│   ├── tools/
+│   │   ├── x-search.ts        # x_search tool implementation
+│   │   └── x-search.test.ts   # x_search unit tests
+│   └── config.test.ts         # Config unit tests
 ├── test-integration.ts        # Integration tests
 ├── TESTING.md                 # Testing guide
 ├── PLAN.md                    # Implementation plan
@@ -465,6 +485,12 @@ xai-mcp-server/
 
 ## Testing
 
+### Unit Tests
+
+```bash
+bun test
+```
+
 ### Remote Mode (HTTP)
 
 ```bash
@@ -472,14 +498,14 @@ xai-mcp-server/
 bun run dev
 
 # In another terminal, run tests
-bun run test-integration.ts
+bun run test:integration
 ```
 
 ### Local Mode (Stdio)
 
 ```bash
 # Run with stdio mode
-bun run src/index.ts --stdio
+pnpx @d3monizer/xai-mcp-server@latest --stdio
 ```
 
 See [TESTING.md](./TESTING.md) for detailed testing instructions.

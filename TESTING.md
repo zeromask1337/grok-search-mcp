@@ -8,7 +8,20 @@
 
 ## Running Tests
 
-### 1. Start the Server
+### 1. Run Unit Tests
+
+```bash
+bun test
+```
+
+This tests:
+- ✅ XAI client parsing and retry logic
+- ✅ XAI client error handling
+- ✅ Config validation and mode selection
+- ✅ x_search input schema validation
+- ✅ x_search result formatting and error handling
+
+### 2. Start the Server
 
 ```bash
 bun run dev
@@ -16,12 +29,12 @@ bun run dev
 
 The server should start on `http://localhost:3000`
 
-### 2. Run Integration Tests
+### 3. Run Integration Tests
 
 In a separate terminal:
 
 ```bash
-bun run test-integration.ts
+bun run test:integration
 ```
 
 This will test:
@@ -43,6 +56,7 @@ curl http://localhost:3000/health
 ```bash
 curl -X POST http://localhost:3000/mcp \
   -H "Content-Type: application/json" \
+  -H "Accept: application/json, text/event-stream" \
   -d '{
     "jsonrpc": "2.0",
     "id": 1,
@@ -62,6 +76,8 @@ curl -X POST http://localhost:3000/mcp \
 ```bash
 curl -X POST http://localhost:3000/mcp \
   -H "Content-Type: application/json" \
+  -H "Accept: application/json, text/event-stream" \
+  -H "Mcp-Protocol-Version: 2024-11-05" \
   -d '{
     "jsonrpc": "2.0",
     "id": 2,
@@ -73,6 +89,8 @@ curl -X POST http://localhost:3000/mcp \
 ```bash
 curl -X POST http://localhost:3000/mcp \
   -H "Content-Type: application/json" \
+  -H "Accept: application/json, text/event-stream" \
+  -H "Mcp-Protocol-Version: 2024-11-05" \
   -d '{
     "jsonrpc": "2.0",
     "id": 3,
@@ -182,6 +200,8 @@ Test search latency:
 ```bash
 time curl -X POST http://localhost:3000/mcp \
   -H "Content-Type: application/json" \
+  -H "Accept: application/json, text/event-stream" \
+  -H "Mcp-Protocol-Version: 2024-11-05" \
   -d '{
     "jsonrpc": "2.0",
     "id": 1,

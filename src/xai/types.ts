@@ -37,12 +37,21 @@ export const XAIMessageOutputSchema = z.object({
   content: z.array(XAIOutputTextSchema),
 });
 
+export const XAIOtherOutputSchema = z.object({
+  type: z.string(),
+}).catchall(z.unknown());
+
+export const XAIOutputItemSchema = z.union([
+  XAIMessageOutputSchema,
+  XAIOtherOutputSchema,
+]);
+
 export const XAIResponseSchema = z.object({
   id: z.string(),
   object: z.literal("response"),
   status: z.string(),
   model: z.string(),
-  output: z.array(z.unknown()),
+  output: z.array(XAIOutputItemSchema),
   usage: z
     .object({
       prompt_tokens: z.number().optional(),

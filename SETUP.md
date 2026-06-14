@@ -38,6 +38,8 @@ Add your API key:
 XAI_API_KEY=xai-your-actual-key-here
 PORT=3000
 XAI_MODEL=grok-4-1-fast
+XAI_TIMEOUT_MS=30000
+XAI_MAX_RETRIES=2
 LOG_LEVEL=info
 ```
 
@@ -97,14 +99,25 @@ Verification happens automatically when OpenCode spawns the server.
 
 OpenCode spawns the server as a subprocess on-demand. No need to run a separate server.
 
-Edit `~/.config/opencode/opencode.json`:
+#### 1. Publish the package (one-time)
+
+From the repository root:
+
+```bash
+npm login
+bun publish
+```
+
+This publishes `@d3monizer/xai-mcp-server` to npm. Once published, `bunx`/`pnpx` can install and run it automatically.
+
+#### 2. Edit `~/.config/opencode/opencode.json`
 
 ```json
 {
   "mcp": {
     "xai": {
       "type": "local",
-      "command": ["bun", "run", "/absolute/path/to/xai-mcp-server/src/index.ts", "--stdio"],
+      "command": ["pnpx", "@d3monizer/xai-mcp-server@latest", "--stdio"],
       "environment": {
         "XAI_API_KEY": "xai-your-actual-key-here"
       },
@@ -115,14 +128,15 @@ Edit `~/.config/opencode/opencode.json`:
 ```
 
 **Important Notes:**
-- Use absolute path (e.g., `/Users/username/projects/xai-mcp-server`), not relative path
-- Find absolute path with: `cd /path/to/xai-mcp-server && pwd`
-- API key can be set here or in `.env` file (both work)
+- `pnpx` resolves the package from npm, so no local path is needed.
+- API key can be set here or in `.env` file (both work).
+- Use `bunx @d3monizer/xai-mcp-server@latest --stdio` instead of `pnpx` if you prefer Bun.
 
 **Benefits:**
 - No manual server startup required
 - Lower resource usage (only runs when OpenCode uses it)
 - Server stops when not needed
+- Config aligns with other MCP servers (no hardcoded path)
 
 ### Option B: Remote Mode
 
@@ -160,7 +174,7 @@ Edit `~/.config/opencode/opencode.json`:
   "mcp": {
     "xai": {
       "type": "local",
-      "command": ["bun", "run", "/absolute/path/to/xai-mcp-server/src/index.ts", "--stdio"],
+      "command": ["pnpx", "@d3monizer/xai-mcp-server@latest", "--stdio"],
       "environment": {
         "XAI_API_KEY": "xai-your-actual-key-here"
       },
@@ -169,8 +183,6 @@ Edit `~/.config/opencode/opencode.json`:
   }
 }
 ```
-
-Replace `/absolute/path/to/xai-mcp-server` with your actual repository path (use `pwd` to find it).
 
 **Mode comparison:**
 

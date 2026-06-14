@@ -55,10 +55,10 @@ OpenCode → MCP Server (localhost:3000) → XAI Responses API
 
 ### ✅ Phase 2: MCP Server (1-1.5 hours)
 - [x] Setup Hono HTTP server
-- [x] Implement MCP protocol handler
-  - [x] `initialize` method
-  - [x] `tools/list` method
-  - [x] `tools/call` method
+- [x] Use `@modelcontextprotocol/sdk` `McpServer`
+- [x] Add `WebStandardStreamableHTTPServerTransport` for remote mode
+- [x] Add `StdioServerTransport` for local mode
+- [x] Register `x_search` tool via SDK
 - [x] Add health check endpoint
 - [x] Add logging
 - [x] Test MCP protocol compliance
@@ -93,7 +93,7 @@ Total: 3.5 - 5 hours (Actual: ~3 hours)
 ## Tech Decisions
 - **Bun/Node**: Fast runtime, native TypeScript
 - **Hono**: Lightweight HTTP framework
-- **No Auth**: Localhost only, single user
+- **No Server Auth**: Localhost only; XAI API key is the only secret
 - **No Database**: Stateless server
 
 ## Final Deliverables
