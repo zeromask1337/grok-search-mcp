@@ -31,12 +31,8 @@
     },
     "files": [
         "dist",
-        "src",
         "README.md",
         "SETUP.md",
-        "TESTING.md",
-        "PLAN.md",
-        "evaluation.xml",
         "LICENSE",
         ".env.example"
     ],
