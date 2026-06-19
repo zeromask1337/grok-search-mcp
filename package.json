@@ -1,53 +1,67 @@
 {
-  "name": "@d3monizer/xai-mcp-server",
-  "version": "0.1.0",
-  "description": "MCP server for XAI x_search tool",
-  "license": "MIT",
-  "type": "module",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/zeromask1337/grok-search-mcp"
-  },
-  "homepage": "https://github.com/zeromask1337/grok-search-mcp#readme",
-  "bugs": {
-    "url": "https://github.com/zeromask1337/grok-search-mcp/issues"
-  },
-  "bin": {
-    "xai-mcp-server": "dist/index.js"
-  },
-  "files": [
-    "dist",
-    "src",
-    "README.md",
-    "SETUP.md",
-    "TESTING.md",
-    "PLAN.md",
-    "evaluation.xml",
-    "LICENSE",
-    ".env.example"
-  ],
-  "exports": {
-    ".": "./dist/index.js"
-  },
-  "publishConfig": {
-    "access": "public"
-  },
-  "scripts": {
-    "dev": "bun run --watch src/index.ts",
-    "start": "bun run src/index.ts",
-    "build": "bun build ./src/index.ts --outdir ./dist --target node",
-    "typecheck": "tsc --noEmit",
-    "test": "bun test",
-    "test:integration": "bun run test-integration.ts",
-    "prepublishOnly": "bun run build"
-  },
-  "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.25.1",
-    "hono": "^4.6.15",
-    "zod": "^3.24.1"
-  },
-  "devDependencies": {
-    "bun-types": "latest",
-    "typescript": "^5.9.3"
-  }
+    "name": "@d3monizer/xai-mcp-server",
+    "version": "0.1.0",
+    "description": "MCP server for XAI x_search tool",
+    "license": "MIT",
+    "author": "zeromask1337",
+    "keywords": [
+        "mcp",
+        "mcp-server",
+        "modelcontextprotocol",
+        "xai",
+        "grok",
+        "twitter",
+        "x-search",
+        "search"
+    ],
+    "engines": {
+        "bun": ">=1.0.0"
+    },
+    "type": "module",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/zeromask1337/grok-search-mcp"
+    },
+    "homepage": "https://github.com/zeromask1337/grok-search-mcp#readme",
+    "bugs": {
+        "url": "https://github.com/zeromask1337/grok-search-mcp/issues"
+    },
+    "bin": {
+        "xai-mcp-server": "dist/index.js"
+    },
+    "files": [
+        "dist",
+        "src",
+        "README.md",
+        "SETUP.md",
+        "TESTING.md",
+        "PLAN.md",
+        "evaluation.xml",
+        "LICENSE",
+        ".env.example"
+    ],
+    "exports": {
+        ".": "./dist/index.js"
+    },
+    "publishConfig": {
+        "access": "public"
+    },
+    "scripts": {
+        "dev": "bun run --watch src/index.ts",
+        "start": "bun run src/index.ts",
+        "build": "bun build ./src/index.ts --outdir ./dist --target node",
+        "typecheck": "tsc --noEmit",
+        "test": "bun test",
+        "test:integration": "bun run test-integration.ts",
+        "prepublishOnly": "bun run build"
+    },
+    "dependencies": {
+        "@modelcontextprotocol/sdk": "^1.25.1",
+        "hono": "^4.6.15",
+        "zod": "^3.24.1"
+    },
+    "devDependencies": {
+        "bun-types": "latest",
+        "typescript": "^5.9.3"
+    }
 }
