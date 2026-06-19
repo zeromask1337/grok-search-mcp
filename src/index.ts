@@ -133,11 +133,10 @@ if (mode === "stdio") {
   console.log(`\n✨ Ready to accept connections`);
 }
 
-// Export for Bun (only in HTTP mode)
 export default honoApp
   ? {
-      port: serverPort,
+      port: serverPort!,
       hostname: "127.0.0.1",
       fetch: honoApp.fetch,
     }
-  : undefined;
+  : { mode: "stdio" as const };
